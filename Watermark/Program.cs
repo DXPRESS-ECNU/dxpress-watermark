@@ -95,6 +95,7 @@ namespace Watermark
             Console.WriteLine("Save in format " + outputFormat);
             Console.WriteLine("\n\nPress any key to start....");
             Console.ReadKey();
+            Console.WriteLine("Starting...\n");
 
             Parallel.ForEach(photoList, p =>
             {
