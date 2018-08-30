@@ -27,7 +27,7 @@ namespace Watermark
             ResizePic(originImage, 2000, 2000);
         }
 
-        public void Watermark(ImagePosition position = ImagePosition.LeftBottom, int width = 60, int height = 0, float opacity = 1f)
+        public void Watermark(ImagePosition position = ImagePosition.LeftBottom, int width = 50, int height = 50, float opacity = 1f)
         {
             ResizePic(watermarkImage, 450, 450);
 
