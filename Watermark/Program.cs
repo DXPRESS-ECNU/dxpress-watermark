@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
 
 [assembly: AssemblyVersion("0.1.*")]
 
@@ -17,32 +17,11 @@ namespace Watermark
         {
             Console.Title = "DXPress Image Watermark Tool";
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            //Console.CancelKeyPress += ConsoleOnCancelKeyPress;
-            var app = new Application();
-            AppBuilder.Configure(app)
-                .UsePlatformDetect()
-                .SetupWithoutStarting();
-
             Console.WriteLine($"Image Watermark Tool for DXPress\n© 2018 DXPress\nVersion. {Assembly.GetExecutingAssembly().GetName().Version}\n");
-
+            
             // Choose Image Files
             Console.WriteLine("Choose image files...");
-            string[] filelistStrings;
-            do
-            {
-                var chooseImageTask = Task.Run(() =>
-                {
-                    OpenFileDialog openFileDialog = new OpenFileDialog
-                    {
-                        Title = "Choose Images",
-                        AllowMultiple = true
-                    };
-                    openFileDialog.Filters.Add(new FileDialogFilter { Name = "Images", Extensions = { "jpg", "png", "bmp", "gif" } });
-                    var outPathStrings = openFileDialog.ShowAsync();
-                    return outPathStrings;
-                });
-                filelistStrings = chooseImageTask.GetAwaiter().GetResult();
-            } while (filelistStrings == null);
+            string[] filelistStrings = GetFileLists();
             Console.WriteLine($"{filelistStrings.Length} file(s) selected.");
             photoList = new List<PhotoInfo>();
             foreach (var str in filelistStrings)
@@ -58,20 +37,7 @@ namespace Watermark
 
             // Choose Saving Folder
             Console.WriteLine("\nChoose saving folder...");
-            string savepathString;
-            do
-            {
-                var chooseFolderTask = Task.Run(() =>
-                {
-                    OpenFolderDialog openFolderDialog = new OpenFolderDialog
-                    {
-                        Title = "Choose Saving Folder"
-                    };
-                    var outPathString = openFolderDialog.ShowAsync();
-                    return outPathString;
-                });
-                savepathString = chooseFolderTask.GetAwaiter().GetResult();
-            } while (string.IsNullOrEmpty(savepathString));
+            string savepathString = GetSavingFolder();
             Console.WriteLine($"Save to {savepathString}");
 
             ChooseFormat: Console.Write("\nChoose output format: [png]/jpg/gif >");
@@ -151,6 +117,73 @@ namespace Watermark
         //{
         //    Summary();
         //}
+
+        private static string[] GetFileLists()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                List<string> fileList = new List<string>();
+                string tempstr;
+                do
+                {
+                    Console.Write("Enter file path or Drag it in: ");
+                    tempstr = Console.ReadLine();
+                    if (tempstr != "")
+                        tempstr = tempstr.Replace("\'", "").Replace("\"", "");
+                    if (tempstr.StartsWith(" ") || tempstr.EndsWith(""))
+                        tempstr = tempstr.Trim();
+                    if (File.Exists(tempstr))
+                        if (new string[4] { ".jpg", ".png", ".bmp", ".gif" }.Contains(Path.GetExtension(tempstr)))
+                            fileList.Add(Path.GetFullPath(tempstr));
+                        else
+                            Console.WriteLine($"{tempstr} is not a vaild image.");
+                    else 
+                        Console.WriteLine($"{tempstr} is not a vaild file.");
+                } while (tempstr != "" || fileList.Count == 0);
+
+                return fileList.ToArray();
+            }
+            IntPtr filelisyIntPtr;
+            do
+            {
+                filelisyIntPtr = FileDialog.tinyfd_openFileDialog("Choose Images", "", 4, new string[4] { "*.jpg", "*.png", "*.bmp", "*.gif" }, "Images", 1);
+            } while (filelisyIntPtr == IntPtr.Zero);
+            string[] filelistStrings = stringFromChar(filelisyIntPtr).Split('|');
+            return filelistStrings;
+        }
+
+        private static string GetSavingFolder()
+        {
+            string savepathString;
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                EFP: Console.Write("Enter folder path or Drag it in: ");
+                string tempstr = Console.ReadLine();
+                if (tempstr == "")
+                    goto EFP;
+                tempstr = tempstr.Replace("\'", "").Replace("\"", "");
+                if (tempstr.StartsWith(" ") || tempstr.EndsWith(""))
+                    tempstr = tempstr.Trim();
+                if (!Directory.Exists(tempstr))
+                {
+                    Console.WriteLine($"{tempstr} is not a vaild folder.");
+                    goto EFP;
+                }
+                return tempstr;
+            }
+            do
+            {
+                IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", "");
+                savepathString = stringFromChar(savepathIntPtr);
+            } while (string.IsNullOrEmpty(savepathString));
+
+            return savepathString;
+        }
+
+        private static string stringFromChar(IntPtr ptr)
+        {
+            return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
+        }
 
         class PhotoInfo
         {
