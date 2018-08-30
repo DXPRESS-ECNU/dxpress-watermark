@@ -64,7 +64,7 @@ v0.1 8/30/2018 第一个发布版本，完成了基本功能。
 
 预编译包可从 GitHub Release 中下载，同时也会上传至网盘之中。
 
-Github 仓库地址： https://github.com/DXPRESS-ECNU/dxpress-watermark
+Github 仓库地址： <https://github.com/DXPRESS-ECNU/dxpress-watermark>
 
 ### 问题反馈
 
