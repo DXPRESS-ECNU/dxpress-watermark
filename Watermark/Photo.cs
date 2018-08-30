@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
@@ -52,11 +53,8 @@ namespace Watermark
 
         public void SaveImage(string savePath, PicFormat saveFormat)
         {
-            if (!savePath.EndsWith("\\"))
-            {
-                savePath += "\\";
-            }
-            string filepath = savePath + FileName + "." + saveFormat;
+            string saveName = FileName + "." + saveFormat;
+            string filepath = Path.Combine(savePath, saveName);
             switch (saveFormat)
             {
                 case PicFormat.png:
