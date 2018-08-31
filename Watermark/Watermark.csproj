@@ -38,6 +38,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Update="openfiledialog-linux">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="openfiledialog-osx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="selectfolderdialog-linux">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="selectfolderdialog-osx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="tinyfiledialogs64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

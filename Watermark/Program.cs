@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-[assembly: AssemblyVersion("0.1.*")]
+[assembly: AssemblyVersion("0.2.*")]
 
 namespace Watermark
 {
@@ -29,7 +30,7 @@ namespace Watermark
                 PhotoInfo photo = new PhotoInfo
                 {
                     OriginPath = str,
-                    FileName = System.IO.Path.GetFileNameWithoutExtension(str)
+                    FileName = Path.GetFileNameWithoutExtension(str)
                 };
                 photoList.Add(photo);
                 Console.WriteLine(str);
@@ -72,13 +73,13 @@ namespace Watermark
                     photo.Watermark();
                     photo.SaveImage(savepathString, outputFormat);
                     p.IsSuccess = true;
-                    Console.WriteLine(System.IO.Path.GetFileName(p.OriginPath) + " ... Success");
+                    Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... Success");
                 }
                 catch (Exception e)
                 {
                     p.IsSuccess = false;
                     p.ErrorMessage = e.Message;
-                    Console.WriteLine(System.IO.Path.GetFileName(p.OriginPath) + " ... ERROR: " + e.Message);
+                    Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... ERROR: " + e.Message);
                 }
             });
             Summary();
@@ -120,69 +121,76 @@ namespace Watermark
 
         private static string[] GetFileLists()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                List<string> fileList = new List<string>();
-                string tempstr;
-                do
-                {
-                    Console.Write("Enter file path or Drag it in: ");
-                    tempstr = Console.ReadLine();
-                    if (tempstr != "")
-                        tempstr = tempstr.Replace("\'", "").Replace("\"", "");
-                    if (tempstr.StartsWith(" ") || tempstr.EndsWith(""))
-                        tempstr = tempstr.Trim();
-                    if (File.Exists(tempstr))
-                        if (new string[4] { ".jpg", ".png", ".bmp", ".gif" }.Contains(Path.GetExtension(tempstr)))
-                            fileList.Add(Path.GetFullPath(tempstr));
-                        else
-                            Console.WriteLine($"{tempstr} is not a vaild image.");
-                    else 
-                        Console.WriteLine($"{tempstr} is not a vaild file.");
-                } while (tempstr != "" || fileList.Count == 0);
-
-                return fileList.ToArray();
-            }
-            IntPtr filelisyIntPtr;
+            string fileliststr; 
             do
             {
-                filelisyIntPtr = FileDialog.tinyfd_openFileDialog("Choose Images", "", 4, new string[4] { "*.jpg", "*.png", "*.bmp", "*.gif" }, "Images", 1);
-            } while (filelisyIntPtr == IntPtr.Zero);
-            string[] filelistStrings = stringFromChar(filelisyIntPtr).Split('|');
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    IntPtr filelisyIntPtr;
+                    filelisyIntPtr = FileDialog.tinyfd_openFileDialog("Choose Images", "", 4, new string[4] { "*.jpg", "*.png", "*.bmp", "*.gif" }, "Images", 1);
+                    fileliststr = StringFromChar(filelisyIntPtr);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    fileliststr = GetStdOut("openfiledialog-linux");
+                }
+                else
+                {
+                    fileliststr = GetStdOut("openfiledialog-osx");
+                }
+            } while (string.IsNullOrEmpty(fileliststr));
+            string[] filelistStrings = fileliststr.Split('|');
             return filelistStrings;
         }
 
         private static string GetSavingFolder()
         {
             string savepathString;
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                EFP: Console.Write("Enter folder path or Drag it in: ");
-                string tempstr = Console.ReadLine();
-                if (tempstr == "")
-                    goto EFP;
-                tempstr = tempstr.Replace("\'", "").Replace("\"", "");
-                if (tempstr.StartsWith(" ") || tempstr.EndsWith(""))
-                    tempstr = tempstr.Trim();
-                if (!Directory.Exists(tempstr))
-                {
-                    Console.WriteLine($"{tempstr} is not a vaild folder.");
-                    goto EFP;
-                }
-                return tempstr;
-            }
             do
             {
-                IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", "");
-                savepathString = stringFromChar(savepathIntPtr);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", "");
+                    savepathString = StringFromChar(savepathIntPtr);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    savepathString = GetStdOut("selectfolderdialog-linux");
+                }
+                else
+                {
+                    savepathString = GetStdOut("selectfolderdialog-osx");
+                }
+                
             } while (string.IsNullOrEmpty(savepathString));
 
             return savepathString;
         }
 
-        private static string stringFromChar(IntPtr ptr)
+        private static string GetStdOut(string fileName)
         {
-            return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(ptr);
+            Process process = new Process
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }
+            };
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            process.Close();
+            return output;
+        }
+
+        private static string StringFromChar(IntPtr ptr)
+        {
+            return Marshal.PtrToStringAnsi(ptr);
         }
 
         class PhotoInfo
