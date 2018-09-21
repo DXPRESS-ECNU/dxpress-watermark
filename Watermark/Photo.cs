@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.MetaData.Profiles.Exif;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
@@ -77,6 +78,13 @@ namespace Watermark
                 Size = new Size(maxWidth, maxHeight)
             };
             image.Mutate(x => x.Resize(resizeOptions));
+        }
+
+        public void AddCopyright(string copyRight)
+        {
+            var newExifProfile = originImage.MetaData.ExifProfile == null ? new ExifProfile() : new ExifProfile(originImage.MetaData.ExifProfile.ToByteArray());
+            newExifProfile.SetValue(ExifTag.Copyright, copyRight);
+            originImage.MetaData.ExifProfile = newExifProfile;
         }
 
         public enum ImagePosition
