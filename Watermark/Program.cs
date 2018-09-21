@@ -41,16 +41,17 @@ namespace Watermark
             string savepathString = GetSavingFolder();
             Console.WriteLine($"Save to {savepathString}");
 
-            ChooseFormat: Console.Write("\nChoose output format: [png]/jpg/gif >");
+            ChooseFormat: Console.Write("\nChoose output format: [jpg]/png/gif >");
             string strFormat = Console.ReadLine();
-            Photo.PicFormat outputFormat = Photo.PicFormat.png;
+            Photo.PicFormat outputFormat;
             switch (strFormat.ToLower())
             {
                 case "":
-                case "png":
-                    break;
                 case "jpg":
                     outputFormat = Photo.PicFormat.jpg;
+                    break;
+                case "png":
+                    outputFormat = Photo.PicFormat.png;
                     break;
                 case "gif":
                     outputFormat = Photo.PicFormat.gif;
