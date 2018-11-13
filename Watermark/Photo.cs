@@ -65,7 +65,10 @@ namespace Watermark
                     originImage.Save(filepath, new GifEncoder());
                     break;
                 case PicFormat.jpg:
-                    originImage.Save(filepath, new JpegEncoder());
+                    originImage.Save(filepath, new JpegEncoder
+                    {
+                        Quality = 80
+                    });
                     break;
             }
         }
