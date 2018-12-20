@@ -67,8 +67,10 @@ namespace Watermark
 
             Parallel.ForEach(photoList, p =>
             {
+#if !DEBUG
                 try
                 {
+#endif
                     Photo photo = new Photo(p.OriginPath) {FileName = p.FileName + "[DXPress]"};
                     if (photo.Width > 2000 || photo.Height > 2000) // No resize for image smaller than 2000*2000
                         photo.Resize();
@@ -77,13 +79,15 @@ namespace Watermark
                     photo.SaveImage(savepathString, photo.FrameCount > 1 ? Photo.PicFormat.gif:outputFormat);
                     p.IsSuccess = true;
                     Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... Success");
-                }
+#if !DEBUG
+            }
                 catch (Exception e)
                 {
                     p.IsSuccess = false;
                     p.ErrorMessage = e.Message;
                     Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... ERROR: " + e.Message);
-                }
+            }
+#endif
             });
             Summary();
         }

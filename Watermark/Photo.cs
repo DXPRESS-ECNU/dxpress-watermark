@@ -37,28 +37,22 @@ namespace Watermark
 
         public void Watermark(ImagePosition position = ImagePosition.LeftBottom, int width = 50, int height = 50, float opacity = 1f)
         {
-            ResizePic(watermarkImage, 450, 450);
-
-            int originWidth = originImage.Width;
-            int originHeight = originImage.Height;
-            int wmWidth = watermarkImage.Width;
-            int wmHeight = watermarkImage.Height;
-
             int wmPosiX, wmPosiY;
 
+            int maxWmNew = 450;
             if (Height < 2000 && Width < 2000)
             {
-                width = width * (Width / 2000);
-                height = height * (Height / 2000);
-                int maxWmNew = (Height > Width ? height : width) * (watermarkImage.Height > watermarkImage.Width ? watermarkImage.Height : watermarkImage.Width) / 2000;
-                ResizePic(watermarkImage, maxWmNew, maxWmNew);
+                width = width * Width / 2000;
+                height = height * Height / 2000;
+                maxWmNew = (Height > Width ? Height : Width) * maxWmNew / 2000;
             }
+            ResizePic(watermarkImage, maxWmNew, maxWmNew);
 
             switch (position)
             {
                 case ImagePosition.LeftBottom:
                     wmPosiX = width;
-                    wmPosiY = originHeight - wmHeight - height;
+                    wmPosiY = originImage.Height - watermarkImage.Height - height;
                     break;
                 default:
                     throw new NotImplementedException();
