@@ -157,7 +157,7 @@ namespace Watermark
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", "");
+                    IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", Path.GetDirectoryName(photoList[0].OriginPath));
                     savepathString = StringFromChar(savepathIntPtr);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
