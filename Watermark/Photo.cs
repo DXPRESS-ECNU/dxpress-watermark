@@ -46,6 +46,14 @@ namespace Watermark
 
             int wmPosiX, wmPosiY;
 
+            if (Height < 2000 && Width < 2000)
+            {
+                width = width * (Width / 2000);
+                height = height * (Height / 2000);
+                int maxWmNew = (Height > Width ? height : width) * (watermarkImage.Height > watermarkImage.Width ? watermarkImage.Height : watermarkImage.Width) / 2000;
+                ResizePic(watermarkImage, maxWmNew, maxWmNew);
+            }
+
             switch (position)
             {
                 case ImagePosition.LeftBottom:
