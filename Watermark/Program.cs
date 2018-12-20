@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-[assembly: AssemblyVersion("0.2.*")]
+[assembly: AssemblyVersion("0.3.*")]
 
 namespace Watermark
 {
@@ -70,10 +70,11 @@ namespace Watermark
                 try
                 {
                     Photo photo = new Photo(p.OriginPath) {FileName = p.FileName + "[DXPress]"};
-                    photo.Resize();
+                    if (photo.Width > 2000 || photo.Height > 2000) // No resize for image smaller than 2000*2000
+                        photo.Resize();
                     photo.Watermark();
                     photo.AddCopyright($"Copyright, ECNU Daxia Press, {DateTime.Today.Year}. All rights reserved.");
-                    photo.SaveImage(savepathString, outputFormat);
+                    photo.SaveImage(savepathString, photo.FrameCount > 1 ? Photo.PicFormat.gif:outputFormat);
                     p.IsSuccess = true;
                     Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... Success");
                 }

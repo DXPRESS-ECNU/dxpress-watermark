@@ -18,6 +18,12 @@ namespace Watermark
 
         public string FileName;
 
+        public int Width => originImage.Width;
+
+        public int Height => originImage.Height;
+
+        public int FrameCount => originImage.Frames.Count;
+
         public Photo(string path)
         {
             originImage = Image.Load(path);
@@ -26,7 +32,7 @@ namespace Watermark
 
         public void Resize()
         {
-            ResizePic(originImage, 2000, 2000);
+                ResizePic(originImage, 2000, 2000);
         }
 
         public void Watermark(ImagePosition position = ImagePosition.LeftBottom, int width = 50, int height = 50, float opacity = 1f)
