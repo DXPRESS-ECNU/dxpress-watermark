@@ -40,12 +40,9 @@ namespace Watermark
             int wmPosiX, wmPosiY;
 
             int maxWmNew = 450;
-            if (Height < 2000 && Width < 2000)
-            {
-                width = width * Width / 2000;
-                height = height * Height / 2000;
-                maxWmNew = (Height > Width ? Height : Width) * maxWmNew / 2000;
-            }
+            width = width * Width / 2000;
+            height = height * Height / 2000;
+            maxWmNew = Width * maxWmNew / 2000;
             ResizePic(watermarkImage, maxWmNew, maxWmNew);
 
             switch (position)
