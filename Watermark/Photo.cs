@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.MetaData.Profiles.Exif;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
@@ -17,6 +18,12 @@ namespace Watermark
 
         public string FileName;
 
+        public int Width => originImage.Width;
+
+        public int Height => originImage.Height;
+
+        public int FrameCount => originImage.Frames.Count;
+
         public Photo(string path)
         {
             originImage = Image.Load(path);
@@ -25,25 +32,24 @@ namespace Watermark
 
         public void Resize()
         {
-            ResizePic(originImage, 2000, 2000);
+                ResizePic(originImage, 2000, 2000);
         }
 
         public void Watermark(ImagePosition position = ImagePosition.LeftBottom, int width = 50, int height = 50, float opacity = 1f)
         {
-            ResizePic(watermarkImage, 450, 450);
-
-            int originWidth = originImage.Width;
-            int originHeight = originImage.Height;
-            int wmWidth = watermarkImage.Width;
-            int wmHeight = watermarkImage.Height;
-
             int wmPosiX, wmPosiY;
+
+            int maxWmNew = 450;
+            width = width * Width / 2000;
+            height = height * Height / 2000;
+            maxWmNew = Width * maxWmNew / 2000;
+            ResizePic(watermarkImage, maxWmNew, maxWmNew);
 
             switch (position)
             {
                 case ImagePosition.LeftBottom:
                     wmPosiX = width;
-                    wmPosiY = originHeight - wmHeight - height;
+                    wmPosiY = originImage.Height - watermarkImage.Height - height;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -64,7 +70,10 @@ namespace Watermark
                     originImage.Save(filepath, new GifEncoder());
                     break;
                 case PicFormat.jpg:
-                    originImage.Save(filepath, new JpegEncoder());
+                    originImage.Save(filepath, new JpegEncoder
+                    {
+                        Quality = 80
+                    });
                     break;
             }
         }
@@ -77,6 +86,13 @@ namespace Watermark
                 Size = new Size(maxWidth, maxHeight)
             };
             image.Mutate(x => x.Resize(resizeOptions));
+        }
+
+        public void AddCopyright(string copyRight)
+        {
+            var newExifProfile = originImage.MetaData.ExifProfile == null ? new ExifProfile() : new ExifProfile(originImage.MetaData.ExifProfile.ToByteArray());
+            newExifProfile.SetValue(ExifTag.Copyright, copyRight);
+            originImage.MetaData.ExifProfile = newExifProfile;
         }
 
         public enum ImagePosition

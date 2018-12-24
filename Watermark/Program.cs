@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-[assembly: AssemblyVersion("0.2.*")]
+[assembly: AssemblyVersion("0.3.*")]
 
 namespace Watermark
 {
@@ -41,16 +41,17 @@ namespace Watermark
             string savepathString = GetSavingFolder();
             Console.WriteLine($"Save to {savepathString}");
 
-            ChooseFormat: Console.Write("\nChoose output format: [png]/jpg/gif >");
+            ChooseFormat: Console.Write("\nChoose output format: [jpg]/png/gif >");
             string strFormat = Console.ReadLine();
-            Photo.PicFormat outputFormat = Photo.PicFormat.png;
+            Photo.PicFormat outputFormat;
             switch (strFormat.ToLower())
             {
                 case "":
-                case "png":
-                    break;
                 case "jpg":
                     outputFormat = Photo.PicFormat.jpg;
+                    break;
+                case "png":
+                    outputFormat = Photo.PicFormat.png;
                     break;
                 case "gif":
                     outputFormat = Photo.PicFormat.gif;
@@ -66,21 +67,27 @@ namespace Watermark
 
             Parallel.ForEach(photoList, p =>
             {
+#if !DEBUG
                 try
                 {
+#endif
                     Photo photo = new Photo(p.OriginPath) {FileName = p.FileName + "[DXPress]"};
-                    photo.Resize();
+                    if (photo.Width > 2000 || photo.Height > 2000) // No resize for image smaller than 2000*2000
+                        photo.Resize();
                     photo.Watermark();
-                    photo.SaveImage(savepathString, outputFormat);
+                    photo.AddCopyright($"Copyright, ECNU Daxia Press, {DateTime.Today.Year}. All rights reserved.");
+                    photo.SaveImage(savepathString, photo.FrameCount > 1 ? Photo.PicFormat.gif:outputFormat);
                     p.IsSuccess = true;
                     Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... Success");
-                }
+#if !DEBUG
+            }
                 catch (Exception e)
                 {
                     p.IsSuccess = false;
                     p.ErrorMessage = e.Message;
                     Console.WriteLine(Path.GetFileName(p.OriginPath) + " ... ERROR: " + e.Message);
-                }
+            }
+#endif
             });
             Summary();
         }
@@ -150,7 +157,7 @@ namespace Watermark
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", "");
+                    IntPtr savepathIntPtr = FileDialog.tinyfd_selectFolderDialog("Select Saveing Folder", Path.GetDirectoryName(photoList[0].OriginPath));
                     savepathString = StringFromChar(savepathIntPtr);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
