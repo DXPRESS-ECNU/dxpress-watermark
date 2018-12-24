@@ -1,7 +1,7 @@
 ﻿# Just a zip tool now.
 $version = Read-Host 'Version'
 $pubfileList = Get-ChildItem  '.\Watermark\Properties\PublishProfiles\' -recurse -Include *.pubxml
-msbuild -t:restore
+# msbuild -t:restore
 foreach ($file in $pubfileList) {
     $pubName = [System.IO.Path]::GetFileNameWithoutExtension($file);
     # msbuild .\Watermark\Watermark.csproj /p:DeployOnBuild=true /p:PublishProfile=$pubName;
