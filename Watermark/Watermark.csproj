@@ -1,20 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
     <Company>ECNU DXPress</Company>
     <Authors>DXPress</Authors>
     <Deterministic>False</Deterministic>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\dxpressWatermark.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
